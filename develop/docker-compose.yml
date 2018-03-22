@@ -1,0 +1,64 @@
+version: '3.2'
+services:
+    website_builder:
+      volumes:
+        - type: volume
+          source: website
+          target: /website
+          read_only: false
+      build: ./website-builder
+
+    website_server:
+      volumes:
+        - type: bind
+          source: ./website-server/conf/nginx.conf
+          target: /etc/nginx/nginx.conf
+          read_only: true
+        - type: bind
+          source: ./website-server/sites
+          target: /etc/nginx/conf.d
+          read_only: true
+        - type: bind
+          source: ./website-server/certs
+          target: /etc/letsencrypt/live
+          read_only: true
+        - type: bind
+          source: ./website-server/errors
+          target: /var/www/errors
+          read_only: true
+        - type: volume
+          source: website
+          target: /var/www/html
+          read_only: true
+      build: ./website-server
+      ports:
+        - target: 80
+          published: 80
+          protocol: tcp
+          mode: host
+        - target: 443
+          published: 443
+          protocol: tcp
+          mode: host
+      depends_on:
+        - website_builder
+        - api_server
+      restart: always
+
+    api_server:
+      volumes:
+        - type: volume
+          source: backups
+          target: /backups
+          read_only: false
+      build: ./api-server
+      ports:
+        - target: 5000
+          published: 5000
+          protocol: tcp
+          mode: host
+      restart: always
+
+volumes:
+  website:
+  backups:
