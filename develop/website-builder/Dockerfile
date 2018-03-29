@@ -1,5 +1,5 @@
 # Use Alpine Linux as base image
-FROM alpine
+FROM alpine:3.7
 
 # Install all the required packages
 RUN apk add --update --no-cache git nodejs
